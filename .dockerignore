@@ -1,0 +1,6 @@
+.git
+volumes
+.env.pydevenv_dir
+.gitignore
+compose.yaml
+setup_pydevenv.sh

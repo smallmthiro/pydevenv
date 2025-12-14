@@ -1,0 +1,34 @@
+services:
+  jupyterhub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Settings for using a proxy.
+      - no_proxy=127.0.0.1,localhost,pydevenv.internal
+      - NO_PROXY=127.0.0.1,localhost,pydevenv.internal
+    env_file:
+      - ./.env.pydevenv_dir
+    container_name: pydevenv_jupyterhub
+    hostname: jupyterhub.pydevenv.internal
+    networks:
+      - pydevenv_net
+    ports:
+      - "139:139"
+      - "445:445"
+      - "8000:8000"
+      - "10022:10022"
+    volumes:
+      - ./volumes/immutable/settings:/etc/jupyterhub/immutable_settings:rw
+      - ./volumes/immutable/smb.conf:/etc/samba/smb.conf:ro
+      - ./volumes/immutable/sshd_config:/etc/ssh/sshd_config:ro
+      - ./volumes/mutable/settings:/etc/jupyterhub/mutable_settings:rw
+      - ./volumes/mutable/samba:/var/lib/samba:rw
+      - ./volumes/mutable/home:/home:rw
+      - ./volumes/mutable/share:/share:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    restart: unless-stopped
+
+networks:
+  pydevenv_net:
+    name: pydevenv_net

@@ -1,0 +1,32 @@
+FROM nvcr.io/nvidia/tensorrt:24.12-py3
+
+ARG JUPYTERHUB_VERSION=5.2.1
+
+RUN apt-get update && \
+    apt-get install -y \
+        nano \
+        git-all && \
+    python3 -m pip install --upgrade pip
+
+RUN curl -o- https://fnm.vercel.app/install | bash -s -- --install-dir /usr/local/fnm && \
+    /usr/local/fnm/fnm install 22
+
+RUN eval "`/usr/local/fnm/fnm env`" && npm install -g configurable-http-proxy
+
+RUN apt-get install -y libgl1 && \
+    python3 -m pip install --upgrade opencv-python
+
+RUN python3 -m pip install --upgrade tensorflow[and-cuda] keras
+RUN python3 -m pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+RUN python3 -m pip install --upgrade numpy pandas matplotlib scipy sympy openpyxl scikit-learn
+
+RUN python3 -m pip install --upgrade jupyterlab notebook
+RUN python3 -m pip install jupyterhub==${JUPYTERHUB_VERSION}
+
+COPY ./singleuser_config/jupyter_jupyterhub_singleuser_config.py /etc/jupyterhub/jupyter_jupyterhub_singleuser_config.py
+
+EXPOSE 8888
+
+WORKDIR /pydevenv
+
+CMD ["jupyterhub-singleuser", "--allow-root", "--port=8888", "--config=/etc/jupyterhub/jupyter_jupyterhub_singleuser_config.py"]
